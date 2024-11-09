@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'; // Add GLTFLoader
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -178,6 +179,22 @@ controller1.addEventListener('connected', (event) => {
 
     onGamepadUpdate();
 });
+
+// Load the GLB model
+const loader = new GLTFLoader();
+loader.load(
+    './models/adafruit_huzzah32_esp32_feather.glb', // Replace with the path to your GLB model
+    function (gltf) {
+        // Add the loaded model to the scene
+        scene.add(gltf.scene);
+    },
+    function (xhr) {
+        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+    },
+    function (error) {
+        console.error('An error happened', error);
+    }
+);
 
 // Animation loop
 function animate() {
