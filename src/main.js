@@ -74,7 +74,7 @@ const createLaserPointer = (color) => {
 
     const material = new THREE.LineBasicMaterial({
         color: color,
-        linewidth: 7
+        linewidth: 2
     });
 
     const line = new THREE.Line(geometry, material);
