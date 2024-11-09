@@ -137,7 +137,7 @@ const movementSpeed = 10;
 // Debug info setup
 const debugCanvas = document.createElement('canvas');
 debugCanvas.width = 512;
-debugCanvas.height = 256;
+debugCanvas.height = 253;
 
 const debugContext = debugCanvas.getContext('2d');
 debugContext.fillStyle = 'white';
