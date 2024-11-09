@@ -1,15 +1,20 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/webxr/VRButton.js';
 
 // Example basic setup for a three.js scene
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 
-// Set renderer size
 renderer.setSize(window.innerWidth, window.innerHeight);
+// Enable WebXR
+renderer.xr.enabled = true;
 
 // Append the renderer to the document body
 document.body.appendChild(renderer.domElement);
+
+// Add the VR button to the DOM
+document.body.appendChild(VRButton.createButton(renderer));
 
 // Create a cube
 const geometry = new THREE.BoxGeometry();
@@ -20,12 +25,12 @@ scene.add(cube);
 // Set the camera position
 camera.position.z = 5;
 
-// Render loop
 const animate = () => {
-    requestAnimationFrame(animate);
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-    renderer.render(scene, camera);
+    renderer.setAnimationLoop(() => {
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+        renderer.render(scene, camera);
+    });
 };
 
 animate();
