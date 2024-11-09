@@ -14,7 +14,7 @@ camera.position.set(0, 1.6, 3);
 // Renderer setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.xr.enabled = true; // Enable WebXR
+renderer.xr.enabled = true;
 
 // Add VR button
 document.body.appendChild(renderer.domElement);
@@ -29,7 +29,7 @@ controls.update();
 const floorGeometry = new THREE.PlaneGeometry(20, 20);
 const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x404040 });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.rotation.x = -Math.PI / 2; // Rotate to lay flat
+floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);
 
@@ -45,7 +45,7 @@ scene.add(directionalLight);
 const cubeGeometry = new THREE.BoxGeometry();
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-cube.position.set(0, 1.5, -3); // Elevate the cube
+cube.position.set(0, 1.5, -3);
 cube.castShadow = true;
 scene.add(cube);
 
@@ -74,11 +74,11 @@ const createLaserPointer = (color) => {
 
     const material = new THREE.LineBasicMaterial({
         color: color,
-        linewidth: 2
+        linewidth: 5
     });
 
     const line = new THREE.Line(geometry, material);
-    line.scale.z = 5; // Length of the laser pointer
+    line.scale.z = 15; // Length of the laser pointer
 
     return line;
 }
@@ -132,7 +132,30 @@ let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
 
-const movementSpeed = 0.05;
+const movementSpeed = 5;
+
+// Debug info setup
+const debugCanvas = document.createElement('canvas');
+debugCanvas.width = 512;
+debugCanvas.height = 256;
+
+const debugContext = debugCanvas.getContext('2d');
+debugContext.fillStyle = 'white';
+debugContext.font = '30px Arial';
+
+const debugTexture = new THREE.Texture(debugCanvas);
+const debugMaterial = new THREE.MeshBasicMaterial({ map: debugTexture });
+
+const debugPlane = new THREE.PlaneGeometry(2, 1);
+const debugMesh = new THREE.Mesh(debugPlane, debugMaterial);
+debugMesh.position.set(0, 2, -4);
+scene.add(debugMesh);
+
+const updateDebugInfo = (text) => {
+    debugContext.clearRect(0, 0, debugCanvas.width, debugCanvas.height);
+    debugContext.fillText(text, 10, 50);
+    debugTexture.needsUpdate = true;
+};
 
 controller1.addEventListener('connected', (event) => {
     const gamepad = event.data.gamepad;
@@ -145,6 +168,9 @@ controller1.addEventListener('connected', (event) => {
             moveBackward = y > 0.2;
             moveLeft = x < -0.2;
             moveRight = x > 0.2;
+
+            const debugText = `Controller 0\nAxes: ${x.toFixed(2)}, ${y.toFixed(2)}\nButtons: ${gamepad.buttons.map(b => b.pressed).join(', ')}`;
+            updateDebugInfo(debugText);
         }
 
         requestAnimationFrame(onGamepadUpdate);
