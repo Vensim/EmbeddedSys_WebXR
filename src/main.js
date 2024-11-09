@@ -2,32 +2,54 @@ import * as THREE from 'three';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
-// Set up the scene, camera, and renderer
+// Scene setup
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x505050);
+
+// Camera setup
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 1.6, 3);
+
+// Renderer setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.xr.enabled = true; // This line should correctly enable WebXR
 
-// Enable WebXR in renderer
-renderer.xr.enabled = true;
+// Add VR button
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(VRButton.createButton(renderer));
 
-// Create a cube
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-const cube = new THREE.Mesh(geometry, material);
-cube.position.set(0, 1.5, -3);  // Set position in front of the camera
-scene.add(cube);
+// Floor
+const floorGeometry = new THREE.PlaneGeometry(20, 20);
+const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x404040 });
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
 
-// Set camera position
-camera.position.set(0, 1.5, 0);
+// Lights
+const ambientLight = new THREE.AmbientLight(0x404040);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff);
+directionalLight.position.set(3, 10, 10);
+scene.add(directionalLight);
+
+// Create an interactive cube
+const cubeGeometry = new THREE.BoxGeometry();
+const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+cube.position.set(0, 1.5, -3);
+cube.castShadow = true;
+scene.add(cube);
 
 // Oculus controllers setup
 const controller1 = renderer.xr.getController(0);
 const controller2 = renderer.xr.getController(1);
+scene.add(controller1);
+scene.add(controller2);
 
-const controllerModelFactory = new THREE.XRControllerModelFactory();
+const controllerModelFactory = new XRControllerModelFactory();
 
 const controllerGrip1 = renderer.xr.getControllerGrip(0);
 controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
@@ -37,24 +59,22 @@ const controllerGrip2 = renderer.xr.getControllerGrip(1);
 controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
 scene.add(controllerGrip2);
 
-scene.add(controller1);
-scene.add(controller2);
-
-// Function to detect controller intersection with objects
+// Raycaster setup
 const raycaster = new THREE.Raycaster();
+const tempMatrix = new THREE.Matrix4();
+
 function intersectObjects(controller) {
-    const tempMatrix = new THREE.Matrix4();
     tempMatrix.identity().extractRotation(controller.matrixWorld);
     raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
     raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
 
-    return raycaster.intersectObjects(scene.children);
+    return raycaster.intersectObjects(scene.children, false);
 }
 
-// Handle controller events
 function onSelectStart(event) {
     const controller = event.target;
     const intersections = intersectObjects(controller);
+
     if (intersections.length > 0) {
         const intersected = intersections[0].object;
         intersected.material.emissive.b = 1;
@@ -64,6 +84,7 @@ function onSelectStart(event) {
 
 function onSelectEnd(event) {
     const controller = event.target;
+
     if (controller.userData.selected !== undefined) {
         controller.userData.selected.material.emissive.b = 0;
         controller.userData.selected = undefined;
@@ -76,17 +97,13 @@ controller2.addEventListener('selectstart', onSelectStart);
 controller2.addEventListener('selectend', onSelectEnd);
 
 // Animation loop
-const animate = () => {
+function animate() {
     renderer.setAnimationLoop(render);
-};
+}
 
-// Render loop
-const render = () => {
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-
+function render() {
     renderer.render(scene, camera);
-};
+}
 
 animate();
 
