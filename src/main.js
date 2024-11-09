@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -13,17 +14,22 @@ camera.position.set(0, 1.6, 3);
 // Renderer setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.xr.enabled = true; // This line should correctly enable WebXR
+renderer.xr.enabled = true; // Enable WebXR
 
 // Add VR button
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(VRButton.createButton(renderer));
 
+// Add OrbitControls for easier debugging outside VR
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 1.6, 0);
+controls.update();
+
 // Floor
 const floorGeometry = new THREE.PlaneGeometry(20, 20);
 const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x404040 });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.rotation.x = -Math.PI / 2;
+floor.rotation.x = -Math.PI / 2; // Rotate to lay flat
 floor.receiveShadow = true;
 scene.add(floor);
 
@@ -39,7 +45,7 @@ scene.add(directionalLight);
 const cubeGeometry = new THREE.BoxGeometry();
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-cube.position.set(0, 1.5, -3);
+cube.position.set(0, 1.5, -3); // Elevate the cube
 cube.castShadow = true;
 scene.add(cube);
 
@@ -49,7 +55,7 @@ const controller2 = renderer.xr.getController(1);
 scene.add(controller1);
 scene.add(controller2);
 
-const controllerModelFactory = new XRControllerModelFactory();
+const controllerModelFactory = new THREE.XRControllerModelFactory();
 
 const controllerGrip1 = renderer.xr.getControllerGrip(0);
 controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
@@ -58,6 +64,29 @@ scene.add(controllerGrip1);
 const controllerGrip2 = renderer.xr.getControllerGrip(1);
 controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
 scene.add(controllerGrip2);
+
+// Laser pointer setup
+const createLaserPointer = (color) => {
+    const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, 0, -1)
+    ]);
+
+    const material = new THREE.LineBasicMaterial({
+        color: color,
+        linewidth: 2
+    });
+
+    const line = new THREE.Line(geometry, material);
+    line.scale.z = 5; // Length of the laser pointer
+
+    return line;
+}
+
+const laserPointer1 = createLaserPointer(0xff0000);
+const laserPointer2 = createLaserPointer(0x0000ff);
+controller1.add(laserPointer1);
+controller2.add(laserPointer2);
 
 // Raycaster setup
 const raycaster = new THREE.Raycaster();
@@ -71,6 +100,7 @@ function intersectObjects(controller) {
     return raycaster.intersectObjects(scene.children, false);
 }
 
+// Handle controller interaction
 function onSelectStart(event) {
     const controller = event.target;
     const intersections = intersectObjects(controller);
@@ -96,12 +126,52 @@ controller1.addEventListener('selectend', onSelectEnd);
 controller2.addEventListener('selectstart', onSelectStart);
 controller2.addEventListener('selectend', onSelectEnd);
 
+// Handle movement using analog stick
+let moveForward = false;
+let moveBackward = false;
+let moveLeft = false;
+let moveRight = false;
+
+const movementSpeed = 0.05;
+
+controller1.addEventListener('connected', (event) => {
+    const gamepad = event.data.gamepad;
+
+    const onGamepadUpdate = () => {
+        if (gamepad.axes.length > 3) {
+            const x = gamepad.axes[2];
+            const y = gamepad.axes[3];
+            moveForward = y < -0.2;
+            moveBackward = y > 0.2;
+            moveLeft = x < -0.2;
+            moveRight = x > 0.2;
+        }
+
+        requestAnimationFrame(onGamepadUpdate);
+    };
+
+    onGamepadUpdate();
+});
+
 // Animation loop
 function animate() {
     renderer.setAnimationLoop(render);
 }
 
 function render() {
+    if (moveForward) {
+        camera.position.z -= movementSpeed;
+    }
+    if (moveBackward) {
+        camera.position.z += movementSpeed;
+    }
+    if (moveLeft) {
+        camera.position.x -= movementSpeed;
+    }
+    if (moveRight) {
+        camera.position.x += movementSpeed;
+    }
+
     renderer.render(scene, camera);
 }
 
