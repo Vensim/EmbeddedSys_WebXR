@@ -14,6 +14,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(port, () => {
-    console.log(`App running at http://localhost:${port}`);
+// Bind to '0.0.0.0' to listen on all network interfaces
+app.listen(port, '0.0.0.0', () => {
+    console.log(`App running at http://0.0.0.0:${port}`);
 });
