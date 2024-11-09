@@ -1,68 +1,34 @@
 import * as THREE from 'three';
-import WebXRPolyfill from 'webxr-polyfill';
 
-new WebXRPolyfill();
+// Example basic setup for a three.js scene
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
 
-let scene, camera, renderer, info, errorMsg;
+// Set renderer size
+renderer.setSize(window.innerWidth, window.innerHeight);
 
-function init() {
-    info = document.getElementById('info');
-    errorMsg = document.getElementById('error');
+// Append the renderer to the document body
+document.body.appendChild(renderer.domElement);
 
-    if (navigator.xr) {
-        navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
-            if (supported) {
-                info.style.display = 'none';
-                setupScene();
-            } else {
-                showErrorMessage();
-            }
-        }).catch(showErrorMessage);
-    } else {
-        showErrorMessage();
-    }
-}
+// Create a cube
+const geometry = new THREE.BoxGeometry();
+const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const cube = new THREE.Mesh(geometry, material);
 
-function showErrorMessage() {
-    info.style.display = 'none';
-    errorMsg.style.display = 'block';
-}
+scene.add(cube);
 
-function setupScene() {
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.xr.enabled = true;
+// Set the camera position
+camera.position.z = 5;
 
-    document.body.appendChild(renderer.domElement);
+// Render loop
+const animate = () => {
+    requestAnimationFrame(animate);
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.01;
 
-    camera.position.z = 5;
+    renderer.render(scene, camera);
+};
 
-    renderer.setAnimationLoop(() => {
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-        renderer.render(scene, camera);
-    });
-
-    // Create an XR session
-    navigator.xr.requestSession('immersive-vr').then(session => {
-        renderer.xr.setSession(session);
-    }).catch(err => {
-        console.error('Failed to start XR session', err);
-        showErrorMessage();
-    });
-}
-
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-init();
+animate();
