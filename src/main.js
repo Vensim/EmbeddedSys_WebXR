@@ -132,7 +132,7 @@ let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
 
-const movementSpeed = 5;
+const movementSpeed = 10;
 
 // Debug info setup
 const debugCanvas = document.createElement('canvas');
