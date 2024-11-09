@@ -39,21 +39,24 @@ scene.add(controllerGrip2);
 scene.add(controller1);
 scene.add(controller2);
 
-// Handle VR controller input
-controller1.addEventListener('selectstart', onSelectStart);
-controller1.addEventListener('selectend', onSelectEnd);
-controller2.addEventListener('selectstart', onSelectStart);
-controller2.addEventListener('selectend', onSelectEnd);
-
+// State of camera movement triggered by the button press
 let moving = false;
+let controllerMatrix = new THREE.Matrix4();
 
 function onSelectStart(event) {
-    moving = true;
+    if (event.target === controller1) {
+        moving = true;
+    }
 }
 
 function onSelectEnd(event) {
-    moving = false;
+    if (event.target === controller1) {
+        moving = false;
+    }
 }
+
+controller1.addEventListener('selectstart', onSelectStart);
+controller1.addEventListener('selectend', onSelectEnd);
 
 const tempMatrix = new THREE.Matrix4();
 const movementSpeed = 0.05;
@@ -65,13 +68,9 @@ const animate = () => {
 
 const render = () => {
     if (moving) {
-        const userData = controller1.userData;
-        if (!userData.matrix) {
-            userData.matrix = new THREE.Matrix4().identity();
-        }
+        controller1.getWorldPosition(camera.position);
         tempMatrix.identity().extractRotation(controller1.matrixWorld);
-        camera.position.applyMatrix4(tempMatrix);
-        camera.position.z -= movementSpeed;
+        camera.translateOnAxis(new THREE.Vector3(0, 0, -1), movementSpeed);
     }
 
     cube.rotation.x += 0.01;
