@@ -62,12 +62,12 @@ class VRScene {
         this.floor.receiveShadow = true;
         this.scene.add(this.floor);
 
-        const cubeGeometry = new THREE.BoxGeometry();
-        const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-        this.cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-        this.cube.position.set(0, 1.5, -3);
-        this.cube.castShadow = true;
-        this.scene.add(this.cube);
+        // const cubeGeometry = new THREE.BoxGeometry();
+        // const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+        // this.cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        // this.cube.position.set(0, 1.5, -3);
+        // this.cube.castShadow = true;
+        // this.scene.add(this.cube);
     }
 
     initLights() {
@@ -168,7 +168,7 @@ class VRScene {
 
         const debugPlane = new THREE.PlaneGeometry(2, 1);
         const debugMesh = new THREE.Mesh(debugPlane, debugMaterial);
-        debugMesh.position.set(0, 0.5 -2);
+        debugMesh.position.set(0, 2, -1);
         this.scene.add(debugMesh);
     }
 
