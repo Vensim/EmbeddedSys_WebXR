@@ -25,7 +25,7 @@ class VRScene {
             backward: false,
             left: false,
             right: false,
-            speed: 10
+            speed: 0.1
         };
 
         this.loadModel('./models/adafruit_huzzah32_esp32_feather.glb');
@@ -42,7 +42,9 @@ class VRScene {
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.xr.enabled = true;
-        this.renderer.xr.addEventListener('sessionstart', (event) => { this.vrSession = event.session; });
+        this.renderer.xr.addEventListener('sessionstart', (event) => {
+            this.vrSession = event.session;
+        });
 
         document.body.appendChild(this.renderer.domElement);
         document.body.appendChild(VRButton.createButton(this.renderer));
@@ -61,13 +63,6 @@ class VRScene {
         this.floor.rotation.x = -Math.PI / 2;
         this.floor.receiveShadow = true;
         this.scene.add(this.floor);
-
-        // const cubeGeometry = new THREE.BoxGeometry();
-        // const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-        // this.cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-        // this.cube.position.set(0, 1.5, -3);
-        // this.cube.castShadow = true;
-        // this.scene.add(this.cube);
     }
 
     initLights() {
@@ -157,24 +152,27 @@ class VRScene {
 
     initDebugInfo() {
         this.debugCanvas = document.createElement('canvas');
-        this.debugCanvas.width = 512*2;
-        this.debugCanvas.height = 256*2;
+        this.debugCanvas.width = 512;
+        this.debugCanvas.height = 256;
         this.debugContext = this.debugCanvas.getContext('2d');
         this.debugContext.fillStyle = 'white';
-        this.debugContext.font = '30x Arial';
+        this.debugContext.font = '20px Arial';
 
         this.debugTexture = new THREE.Texture(this.debugCanvas);
         const debugMaterial = new THREE.MeshBasicMaterial({ map: this.debugTexture });
 
         const debugPlane = new THREE.PlaneGeometry(2, 1);
         const debugMesh = new THREE.Mesh(debugPlane, debugMaterial);
-        debugMesh.position.set(0, 2, -1);
+        debugMesh.position.set(0, 2, -4);
         this.scene.add(debugMesh);
     }
 
     updateDebugInfo(text) {
+        const lines = text.split('\n');
         this.debugContext.clearRect(0, 0, this.debugCanvas.width, this.debugCanvas.height);
-        this.debugContext.fillText(text, 10, 50);
+        lines.forEach((line, index) => {
+            this.debugContext.fillText(line, 10, 40 + 30 * index); // Adjust the line height
+        });
         this.debugTexture.needsUpdate = true;
     }
 
@@ -183,11 +181,12 @@ class VRScene {
         loader.load(
             modelPath,
             (gltf) => {
+                gltf.scene.position.set(0, 0, 0);  // Adjust the model's position
+                gltf.scene.scale.set(0.1, 0.1, 0.1);    // Adjust the model's scale if necessary
                 this.scene.add(gltf.scene);
+                this.model = gltf.scene;  // Optional: Keep a reference to the model if needed later
             },
-            (xhr) => {
-                console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-            },
+            undefined,
             (error) => {
                 console.error('An error happened', error);
             }
@@ -203,7 +202,7 @@ class VRScene {
         const controller1Info = this.getControllerInfo(this.controller1, 1);
         const controller2Info = this.getControllerInfo(this.controller2, 2);
 
-        this.updateDebugInfo(`${vrOrientationText}\n${controller1Info}\n${controller2Info}`);
+        this.updateDebugInfo(`${vrOrientationText}${controller1Info}\n${controller2Info}`);
 
         if (this.movement.forward) {
             this.camera.position.z -= this.movement.speed;
@@ -226,7 +225,7 @@ class VRScene {
             const pose = this.renderer.xr.getCamera().matrixWorld.elements;
             return `VR Orientation: [${pose[0].toFixed(2)}, ${pose[5].toFixed(2)}, ${pose[10].toFixed(2)}]\n`;
         }
-        return 'VR Orientation: N/A';
+        return 'VR Orientation: N/A\n';
     }
 
     getControllerInfo(controller, index) {
@@ -234,9 +233,9 @@ class VRScene {
         if (gamepad) {
             const axes = gamepad.axes.map(a => a.toFixed(2)).join(', ');
             const buttons = gamepad.buttons.map((b, idx) => `Button ${idx}: ${b.pressed}`).join('\n');
-            return `Controller ${index}\nAxes: [${axes}]\n${buttons}`;
+            return `Controller ${index}\nAxes: [${axes}]\n${buttons}\n`;
         }
-        return `Controller ${index} not connected`;
+        return `Controller ${index} not connected\n`;
     }
 
     handleWindowResize() {
@@ -268,4 +267,5 @@ class VRScene {
     }
 }
 
+// Initialize the VRScene
 new VRScene();
