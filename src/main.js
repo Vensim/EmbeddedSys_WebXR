@@ -168,7 +168,7 @@ class VRScene {
 
         const debugPlane = new THREE.PlaneGeometry(2, 1);
         const debugMesh = new THREE.Mesh(debugPlane, debugMaterial);
-        debugMesh.position.set(0, 2, -4);
+        debugMesh.position.set(0, 0.5 -2);
         this.scene.add(debugMesh);
     }
 
