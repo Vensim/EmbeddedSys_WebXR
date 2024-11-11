@@ -9,8 +9,6 @@ class VRScene {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x505050);
 
-        this.vrSession = null;
-
         this.initCamera();
         this.initRenderer();
         this.initControls();
@@ -19,14 +17,6 @@ class VRScene {
         this.initControllers();
         this.initDebugInfo();
         this.initEventHandlers();
-
-        this.movement = {
-            forward: false,
-            backward: false,
-            left: false,
-            right: false,
-            speed: 0.1
-        };
 
         this.loadModel('./models/adafruit_huzzah32_esp32_feather.glb');
         this.animate();
@@ -42,10 +32,6 @@ class VRScene {
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.xr.enabled = true;
-        this.renderer.xr.addEventListener('sessionstart', (event) => {
-            this.vrSession = event.session;
-        });
-
         document.body.appendChild(this.renderer.domElement);
         document.body.appendChild(VRButton.createButton(this.renderer));
     }
@@ -75,6 +61,9 @@ class VRScene {
     }
 
     initControllers() {
+        const self = this;  // Save reference to this for use in event handlers
+
+        // Initialize controllers
         this.controller1 = this.renderer.xr.getController(0);
         this.controller2 = this.renderer.xr.getController(1);
         this.scene.add(this.controller1);
@@ -82,18 +71,29 @@ class VRScene {
 
         const controllerModelFactory = new XRControllerModelFactory();
 
-        const controllerGrip1 = this.renderer.xr.getControllerGrip(0);
-        controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-        this.scene.add(controllerGrip1);
+        // Controller Grips
+        this.controllerGrip1 = this.renderer.xr.getControllerGrip(0);
+        this.controllerGrip2 = this.renderer.xr.getControllerGrip(1);
+        this.controllerGrip1.add(controllerModelFactory.createControllerModel(this.controllerGrip1));
+        this.controllerGrip2.add(controllerModelFactory.createControllerModel(this.controllerGrip2));
+        this.scene.add(this.controllerGrip1);
+        this.scene.add(this.controllerGrip2);
 
-        const controllerGrip2 = this.renderer.xr.getControllerGrip(1);
-        controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
-        this.scene.add(controllerGrip2);
-
+        // Add laser pointers
         this.laserPointer1 = this.createLaserPointer(0xff0000);
         this.laserPointer2 = this.createLaserPointer(0x0000ff);
         this.controller1.add(this.laserPointer1);
         this.controller2.add(this.laserPointer2);
+
+        // Make objects grabbable
+        this.controller1.addEventListener('selectstart', (event) => this.onSelectStart(event, self));
+        this.controller1.addEventListener('selectend', (event) => this.onSelectEnd(event, self));
+        this.controller2.addEventListener('selectstart', (event) => this.onSelectStart(event, self));
+        this.controller2.addEventListener('selectend', (event) => this.onSelectEnd(event, self));
+        this.controller1.addEventListener('squeezestart', (event) => this.onSqueezeStart(event, self));
+        this.controller1.addEventListener('squeezeend', (event) => this.onSqueezeEnd(event, self));
+        this.controller2.addEventListener('squeezestart', (event) => this.onSqueezeStart(event, self));
+        this.controller2.addEventListener('squeezeend', (event) => this.onSqueezeEnd(event, self));
     }
 
     createLaserPointer(color) {
@@ -120,9 +120,9 @@ class VRScene {
         return raycaster.intersectObjects(this.scene.children, false);
     }
 
-    onSelectStart(event) {
+    onSelectStart(event, self) {
         const controller = event.target;
-        const intersections = this.intersectObjects(controller);
+        const intersections = self.intersectObjects(controller);
 
         if (intersections.length > 0) {
             const intersected = intersections[0].object;
@@ -131,7 +131,7 @@ class VRScene {
         }
     }
 
-    onSelectEnd(event) {
+    onSelectEnd(event, self) {
         const controller = event.target;
 
         if (controller.userData.selected !== undefined) {
@@ -140,14 +140,30 @@ class VRScene {
         }
     }
 
-    initEventHandlers() {
-        this.controller1.addEventListener('selectstart', this.onSelectStart.bind(this));
-        this.controller1.addEventListener('selectend', this.onSelectEnd.bind(this));
-        this.controller2.addEventListener('selectstart', this.onSelectStart.bind(this));
-        this.controller2.addEventListener('selectend', this.onSelectEnd.bind(this));
+    // Handle grabbing with grip button (selecting grip)
+    onSqueezeStart(event, self) {
+        const controller = event.target;
+        const intersections = self.intersectObjects(controller);
 
-        this.controller1.addEventListener('connected', (event) => this.onControllerConnected(event, 1));
-        this.controller2.addEventListener('connected', (event) => this.onControllerConnected(event, 2));
+        if (intersections.length > 0) {
+            const intersected = intersections[0].object;
+            controller.attach(intersected); // Attach model to controller
+            controller.userData.grabbed = intersected;
+        }
+    }
+
+    // Handle releasing with grip button
+    onSqueezeEnd(event, self) {
+        const controller = event.target;
+
+        if (controller.userData.grabbed !== undefined) {
+            self.scene.attach(controller.userData.grabbed);  // Detach model from controller
+            controller.userData.grabbed = undefined;
+        }
+    }
+
+    initEventHandlers() {
+        // Custom event handlers can be added here if needed
     }
 
     initDebugInfo() {
@@ -156,7 +172,7 @@ class VRScene {
         this.debugCanvas.height = 256;
         this.debugContext = this.debugCanvas.getContext('2d');
         this.debugContext.fillStyle = 'white';
-        this.debugContext.font = '20px Arial';
+        this.debugContext.font = '30px Arial';
 
         this.debugTexture = new THREE.Texture(this.debugCanvas);
         const debugMaterial = new THREE.MeshBasicMaterial({ map: this.debugTexture });
@@ -181,8 +197,8 @@ class VRScene {
         loader.load(
             modelPath,
             (gltf) => {
-                gltf.scene.position.set(0, 0, 0);  // Adjust the model's position
-                gltf.scene.scale.set(0.1, 0.1, 0.1);    // Adjust the model's scale if necessary
+                gltf.scene.position.set(0, 1.1, 0);  // Adjust the model's position
+                gltf.scene.scale.set(0.2, 0.2, 0.2);    // Adjust the model's scale if necessary
                 this.scene.add(gltf.scene);
                 this.model = gltf.scene;  // Optional: Keep a reference to the model if needed later
             },
@@ -203,19 +219,6 @@ class VRScene {
         const controller2Info = this.getControllerInfo(this.controller2, 2);
 
         this.updateDebugInfo(`${vrOrientationText}${controller1Info}\n${controller2Info}`);
-
-        if (this.movement.forward) {
-            this.camera.position.z -= this.movement.speed;
-        }
-        if (this.movement.backward) {
-            this.camera.position.z += this.movement.speed;
-        }
-        if (this.movement.left) {
-            this.camera.position.x -= this.movement.speed;
-        }
-        if (this.movement.right) {
-            this.camera.position.x += this.movement.speed;
-        }
 
         this.renderer.render(this.scene, this.camera);
     }
