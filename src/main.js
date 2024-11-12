@@ -197,10 +197,10 @@ class VRScene {
         loader.load(
             modelPath,
             (gltf) => {
-                gltf.scene.position.set(0, 1.1, 0);  // Adjust the model's position
-                gltf.scene.scale.set(0.2, 0.2, 0.2);    // Adjust the model's scale if necessary
+                gltf.scene.position.set(0, 1.1, 0);
+                gltf.scene.scale.set(0.05, 0.05, 0.05);
                 this.scene.add(gltf.scene);
-                this.model = gltf.scene;  // Optional: Keep a reference to the model if needed later
+                this.model = gltf.scene;
             },
             undefined,
             (error) => {
