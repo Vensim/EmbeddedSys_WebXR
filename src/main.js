@@ -4,6 +4,8 @@ import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerM
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+import { generateRandomData, setupChart } from './charting.js';
+
 class VRScene {
     constructor() {
         this.scene = new THREE.Scene();
@@ -19,6 +21,7 @@ class VRScene {
         this.initEventHandlers();
 
         this.loadModel('./models/adafruit_huzzah32_esp32_feather.glb');
+        this.setupDataVisualization();
         this.animate();
         this.handleWindowResize();
     }
@@ -160,6 +163,13 @@ class VRScene {
             self.scene.attach(controller.userData.grabbed);  // Detach model from controller
             controller.userData.grabbed = undefined;
         }
+    }
+
+    setupDataVisualization() {
+
+        const numFunctions = 30
+        setupChart(this.scene, numFunctions, { scale: 1, position: { x: 2, y: 1, z: 1 }, generateDummyData: true });
+        setupChart(this.scene, numFunctions, { scale: 1, position: { x: 2, y: 1, z: 2.2 }, generateDummyData: true });
     }
 
     initEventHandlers() {
