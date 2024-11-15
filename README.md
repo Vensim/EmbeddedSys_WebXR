@@ -31,3 +31,9 @@ npm install
 npm build
 npm run
 ```
+## Acknowledgements
+
+This project uses the `Adafruit HUZZAH32 ESP32 Feather` model, which is made available under the CC-BY-4.0 license.
+
+**Title:** Adafruit HUZZAH32 ESP32 Feather  
+**Author:** Jamie Hamel-Smith ([https://sketchfab.com/jamie3d](https://sketchfab.com/jamie3d))

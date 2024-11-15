@@ -1,0 +1,33 @@
+{
+  "model": "adafruit_huzzah32_esp32_feather.glb",
+  "pins": [
+    { "name": "Pin 1", "coordinates": { "x": -10.239923, "y": 3.5, "z": -19.1 } },
+    { "name": "Pin 2", "coordinates": { "x": -10.239923, "y": 3.5, "z": -16.55 } },
+    { "name": "Pin 3", "coordinates": { "x": -10.239923, "y": 3.5, "z": -14.0 } },
+    { "name": "Pin 4", "coordinates": { "x": -10.239923, "y": 3.5, "z": -11.45 } },
+    { "name": "Pin 5", "coordinates": { "x": -10.239923, "y": 3.5, "z": -8.9 } },
+    { "name": "Pin 6", "coordinates": { "x": -10.239923, "y": 3.5, "z": -6.35 } },
+    { "name": "Pin 7", "coordinates": { "x": -10.239923, "y": 3.5, "z": -3.8 } },
+    { "name": "Pin 8", "coordinates": { "x": -10.239923, "y": 3.5, "z": -1.25 } },
+    { "name": "Pin 9", "coordinates": { "x": -10.239923, "y": 3.5, "z": 1.3 } },
+    { "name": "Pin 10", "coordinates": { "x": -10.239923, "y": 3.5, "z": 3.85 } },
+    { "name": "Pin 11", "coordinates": { "x": -10.239923, "y": 3.5, "z": 6.4 } },
+    { "name": "Pin 12", "coordinates": { "x": -10.239923, "y": 3.5, "z": 8.95 } },
+    { "name": "Pin 13", "coordinates": { "x": -10.239923, "y": 3.5, "z": 11.5 } },
+    { "name": "Pin 14", "coordinates": { "x": -10.239923, "y": 3.5, "z": 14.05 } },
+    { "name": "Pin 15", "coordinates": { "x": -10.239923, "y": 3.5, "z": 16.6 } },
+    { "name": "Pin 16", "coordinates": { "x": -10.239923, "y": 3.5, "z": 19.15 } },
+    { "name": "Pin 17", "coordinates": { "x": 10.239923, "y": 3.5, "z": -8.9 } },
+    { "name": "Pin 18", "coordinates": { "x": 10.239923, "y": 3.5, "z": -6.35 } },
+    { "name": "Pin 19", "coordinates": { "x": 10.239923, "y": 3.5, "z": -3.8 } },
+    { "name": "Pin 20", "coordinates": { "x": 10.239923, "y": 3.5, "z": -1.25 } },
+    { "name": "Pin 21", "coordinates": { "x": 10.239923, "y": 3.5, "z": 1.3 } },
+    { "name": "Pin 22", "coordinates": { "x": 10.239923, "y": 3.5, "z": 3.85 } },
+    { "name": "Pin 23", "coordinates": { "x": 10.239923, "y": 3.5, "z": 6.4 } },
+    { "name": "Pin 24", "coordinates": { "x": 10.239923, "y": 3.5, "z": 8.95 } },
+    { "name": "Pin 25", "coordinates": { "x": 10.239923, "y": 3.5, "z": 11.5 } },
+    { "name": "Pin 26", "coordinates": { "x": 10.239923, "y": 3.5, "z": 14.05 } },
+    { "name": "Pin 27", "coordinates": { "x": 10.239923, "y": 3.5, "z": 16.6 } },
+    { "name": "Pin 28", "coordinates": { "x": 10.239923, "y": 3.5, "z": 19.15 } }
+  ]
+}

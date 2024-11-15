@@ -201,16 +201,60 @@ class VRScene {
         });
         this.debugTexture.needsUpdate = true;
     }
+    attachPins(pinsData) {
+        pinsData.forEach(pin => {
+            const { x, y, z } = pin.coordinates;
+            const sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 
+            // const scaledPosition = new THREE.Vector3(x, y, z).multiplyScalar(1); // Adjust for model scale
+            sphere.position.add(new THREE.Vector3(x, y, z)); // Adjust for model position
+
+            console.log(`Pin position: (${sphere.position.x}, ${sphere.position.y}, ${sphere.position.z})`);
+
+            this.model.add(sphere); // Add sphere to the model
+        });
+    }
     loadModel(modelPath) {
         const loader = new GLTFLoader();
         loader.load(
             modelPath,
             (gltf) => {
-                gltf.scene.position.set(0, 1.1, 0);
+                gltf.scene.position.set(0, 0, 0);
                 gltf.scene.scale.set(0.05, 0.05, 0.05);
                 this.scene.add(gltf.scene);
                 this.model = gltf.scene;
+
+                // Calculate and log model dimensions and position
+                const boundingBox = new THREE.Box3().setFromObject(gltf.scene);
+                const dimensions = boundingBox.getSize(new THREE.Vector3());
+                const position = boundingBox.getCenter(new THREE.Vector3());
+
+                const orientation = new THREE.Quaternion();
+                gltf.scene.getWorldQuaternion(orientation);
+                const euler = new THREE.Euler().setFromQuaternion(orientation);
+
+                console.log('Model Dimensions:', dimensions);
+                console.log('Model Position:', position);
+                console.log('Model Orientation (Euler):', euler);
+
+                //The X axis is red. The Y axis is green. The Z axis is blue.
+                const axesSize = 5;
+                const axesHelper = new THREE.AxesHelper(axesSize);
+                axesHelper.position.set(0, dimensions.y + 5, 0);
+                this.model.add(axesHelper);
+
+                // Add GridHelper to the scene
+                const gridHelper = new THREE.GridHelper(5, 5);
+                gridHelper.position.set(position.x, 0, position.z); // Align the grid with the model
+                this.scene.add(gridHelper);
+
+
+                fetch('./esp32_metadata.json')
+                    .then(response => response.json())
+                    .then(data => this.attachPins(data.pins))
+                    .catch(error => console.error('Error fetching pin locations:', error));
             },
             undefined,
             (error) => {
