@@ -201,6 +201,49 @@ class VRScene {
         });
         this.debugTexture.needsUpdate = true;
     }
+
+    attachDisplays(displaysData) {
+        displaysData.forEach(display => {
+            const { name, corners } = display;
+            const { topLeft, bottomRight } = corners;
+
+            // Calculate width and height based on corner coordinates
+            const width = Math.abs(bottomRight.x - topLeft.x);
+            const height = Math.abs(bottomRight.z - topLeft.z);
+
+            // Create a canvas element to draw the text
+            const canvas = document.createElement('canvas');
+            const canvasWidth = width * 100;  // Scale up for better resolution
+            const canvasHeight = height * 100;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
+            const context = canvas.getContext('2d');
+            context.font = '60px Arial';
+            context.fillStyle = 'white';
+            context.textAlign = 'left';
+            context.textBaseline = 'top';
+            context.fillText(name, 10, 10); // Initial text in the top-left corner
+
+            // Create a texture from the canvas
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true; // Ensure the texture updates correctly
+
+            // Create a material from the texture
+            const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+
+            // Create a plane geometry and apply the material
+            const geometry = new THREE.PlaneGeometry(width, height);
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set((topLeft.x + bottomRight.x) / 2, topLeft.y, (topLeft.z + bottomRight.z) / 2);
+            mesh.rotation.x = mesh.rotation.x = -Math.PI / 2; //
+            this.model.add(mesh); // Add plane to the model
+
+            // Store references to the mesh, canvas, context, and texture for later use
+            // this.textureMeshes.push({ mesh, canvas, context, texture, lastContent: name });
+        });
+    }
+
     attachPins(pinsData) {
         pinsData.forEach(pin => {
             const { x, y, z } = pin.coordinates;
@@ -211,10 +254,31 @@ class VRScene {
             // const scaledPosition = new THREE.Vector3(x, y, z).multiplyScalar(1); // Adjust for model scale
             sphere.position.add(new THREE.Vector3(x, y, z)); // Adjust for model position
 
-            console.log(`Pin position: (${sphere.position.x}, ${sphere.position.y}, ${sphere.position.z})`);
+            // console.log(`Pin position: (${sphere.position.x}, ${sphere.position.y}, ${sphere.position.z})`);
 
             this.model.add(sphere); // Add sphere to the model
         });
+    }
+    updateDisplayContent(index, newContent) {
+        const displayData = this.textureMeshes[index];
+        if (!displayData) {
+            console.error('Display not found');
+            return;
+        }
+
+        const { canvas, context, texture } = displayData;
+
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        context.font = '60px Arial';
+        context.fillStyle = 'white';
+        context.textAlign = 'left';
+        context.textBaseline = 'top';
+        context.fillText(newContent, 10, 10); // Position text in the top-left with a margin
+
+        texture.needsUpdate = true;
+
+        displayData.lastContent = newContent;
     }
     loadModel(modelPath) {
         const loader = new GLTFLoader();
@@ -222,7 +286,7 @@ class VRScene {
             modelPath,
             (gltf) => {
                 gltf.scene.position.set(0, 0, 0);
-                gltf.scene.scale.set(0.05, 0.05, 0.05);
+                // gltf.scene.scale.set(0.05, 0.05, 0.05);
                 this.scene.add(gltf.scene);
                 this.model = gltf.scene;
 
@@ -251,15 +315,29 @@ class VRScene {
                 this.scene.add(gridHelper);
 
 
+                // Fetch metadata and set scale
                 fetch('./esp32_metadata.json')
-                    .then(response => response.json())
-                    .then(data => this.attachPins(data.pins))
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Could not fetch model metadata file.');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        this.attachPins(data.pins); // Attach pins according to metadata
+                        this.attachDisplays(data.display_screen)
+                        const scale = data.scale || 1; // Use 1 as fallback if scale is undefined
+                        this.model.scale.set(scale, scale, scale);
+                    })
                     .catch(error => console.error('Error fetching pin locations:', error));
             },
             undefined,
             (error) => {
-                console.error('An error happened', error);
+                console.error('An error happened in loadModel', error);
             }
+
+
+
         );
     }
 

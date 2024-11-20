@@ -1,5 +1,6 @@
 {
   "model": "adafruit_huzzah32_esp32_feather.glb",
+  "scale": 0.05,
   "pins": [
     { "name": "Pin 1", "coordinates": { "x": -10.239923, "y": 3.5, "z": -19.1 } },
     { "name": "Pin 2", "coordinates": { "x": -10.239923, "y": 3.5, "z": -16.55 } },
@@ -29,5 +30,21 @@
     { "name": "Pin 26", "coordinates": { "x": 10.239923, "y": 3.5, "z": 14.05 } },
     { "name": "Pin 27", "coordinates": { "x": 10.239923, "y": 3.5, "z": 16.6 } },
     { "name": "Pin 28", "coordinates": { "x": 10.239923, "y": 3.5, "z": 19.15 } }
+  ],
+  "display_screen": [
+    {
+      "name": "Display 1",
+      "corners": {
+        "topLeft": { "x": -7.0, "y": 4.75, "z": 1.5 },
+        "bottomRight": { "x": 7, "y": 4.75, "z": 15.95 }
+      }
+    },
+    {
+      "name": "Display 2",
+      "corners": {
+        "topLeft": { "x": -8.0, "y": 2.5, "z": 19.5 },
+        "bottomRight": { "x": 7, "y": 2.5, "z": 24.5 }
+      }
+    }
   ]
 }
