@@ -5,19 +5,27 @@
   "main": "server.js",
   "scripts": {
     "start": "webpack serve",
-    "build": "webpack"
+    "build": "webpack",
+    "test": "mocha --timeout 3000"
   },
   "dependencies": {
     "express": "^4.21.1",
-    "three": "^0.170.0"
+    "mocha": "^10.8.2",
+    "morgan": "^1.10.0",
+    "seedrandom": "^3.0.5",
+    "three": "^0.170.0",
+    "three-addons": "^1.2.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.15.8",
+    "@babel/preset-env": "^7.15.8",
+    "babel-loader": "^8.2.2",
+    "chai": "^5.1.2",
+    "supertest": "^7.0.0",
     "webpack": "^5.58.1",
     "webpack-cli": "^4.9.0",
     "webpack-dev-server": "^4.7.1",
-    "babel-loader": "^8.2.2",
-    "@babel/core": "^7.15.8",
-    "@babel/preset-env": "^7.15.8"
+    "ws": "^8.18.0"
   },
   "author": "",
   "license": "ISC",

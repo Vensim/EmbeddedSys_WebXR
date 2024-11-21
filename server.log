@@ -1,0 +1,18 @@
+2024-11-21T08:00:14.767Z - Client attempted to connect
+2024-11-21T08:00:14.768Z - Headers: ["HTTP/1.1 101 Switching Protocols","Upgrade: websocket","Connection: Upgrade","Sec-WebSocket-Accept: 27np+dAA5uaHRW6kkkjn63yppFM="]
+2024-11-21T08:00:14.768Z - Remote Address: 127.0.0.1
+2024-11-21T08:00:14.768Z - Client connected
+2024-11-21T08:00:14.773Z - Received: Hello
+2024-11-21T08:00:14.774Z - Received: Hello
+2024-11-21T08:00:14.774Z - Received: How are you?
+2024-11-21T08:00:14.775Z - Received: Goodbye
+2024-11-21T08:00:14.779Z - Client disconnected
+2024-11-21T08:56:49.521Z - Client attempted to connect
+2024-11-21T08:56:49.521Z - Headers: ["HTTP/1.1 101 Switching Protocols","Upgrade: websocket","Connection: Upgrade","Sec-WebSocket-Accept: p3dasUvP17XnZL8RMZWKIYReIDo="]
+2024-11-21T08:56:49.521Z - Remote Address: 127.0.0.1
+2024-11-21T08:56:49.522Z - Client connected
+2024-11-21T08:56:49.526Z - Received: Hello
+2024-11-21T08:56:49.527Z - Received: Hello
+2024-11-21T08:56:49.527Z - Received: How are you?
+2024-11-21T08:56:49.528Z - Received: Goodbye
+2024-11-21T08:56:49.532Z - Client disconnected

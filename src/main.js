@@ -22,6 +22,7 @@ class VRScene {
 
         this.loadModel('./models/adafruit_huzzah32_esp32_feather.glb');
         this.setupDataVisualization();
+        this.setupWebSocket();
         this.animate();
         this.handleWindowResize();
     }
@@ -166,7 +167,6 @@ class VRScene {
     }
 
     setupDataVisualization() {
-
         const numFunctions = 30
         setupChart(this.scene, numFunctions, { scale: 1, position: { x: 2, y: 1, z: 1 }, generateDummyData: true });
         setupChart(this.scene, numFunctions, { scale: 1, position: { x: 2, y: 1, z: 2.2 }, generateDummyData: true });
@@ -202,7 +202,31 @@ class VRScene {
         this.debugTexture.needsUpdate = true;
     }
 
+    updateDisplayContent(index, newContent) {
+        const displayData = this.textureMeshes[index];
+        if (!displayData) {
+            console.error('Display not found');
+            return;
+        }
+
+        const { canvas, context, texture } = displayData;
+
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        context.font = '60px Arial';
+        context.fillStyle = 'white';
+        context.textAlign = 'left';
+        context.textBaseline = 'top';
+        context.fillText(newContent, 10, 10); // Position text in the top-left with a margin
+
+        texture.needsUpdate = true;
+
+        displayData.lastContent = newContent;
+    }
+
     attachDisplays(displaysData) {
+        this.textureMeshes = [];  // Initialize textureMeshes array
+
         displaysData.forEach(display => {
             const { name, corners } = display;
             const { topLeft, bottomRight } = corners;
@@ -240,7 +264,7 @@ class VRScene {
             this.model.add(mesh); // Add plane to the model
 
             // Store references to the mesh, canvas, context, and texture for later use
-            // this.textureMeshes.push({ mesh, canvas, context, texture, lastContent: name });
+            this.textureMeshes.push({ mesh, canvas, context, texture, lastContent: name });
         });
     }
 
@@ -259,27 +283,32 @@ class VRScene {
             this.model.add(sphere); // Add sphere to the model
         });
     }
-    updateDisplayContent(index, newContent) {
-        const displayData = this.textureMeshes[index];
-        if (!displayData) {
-            console.error('Display not found');
-            return;
-        }
 
-        const { canvas, context, texture } = displayData;
+    setupWebSocket() {
+        this.socket = new WebSocket('wss://10.42.0.100:3443/');  // Assuming you run WebSocket server over HTTPS
 
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        this.socket.onopen = () => {
+            console.log('WebSocket connection established');
+        };
 
-        context.font = '60px Arial';
-        context.fillStyle = 'white';
-        context.textAlign = 'left';
-        context.textBaseline = 'top';
-        context.fillText(newContent, 10, 10); // Position text in the top-left with a margin
+        this.socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
 
-        texture.needsUpdate = true;
+            if (message.type === 'updateDisplay') {
+                const { index, content } = message;
+                this.updateDisplayContent(index, content);
+            }
+        };
 
-        displayData.lastContent = newContent;
+        this.socket.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
+
+        this.socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
     }
+
     loadModel(modelPath) {
         const loader = new GLTFLoader();
         loader.load(
@@ -314,7 +343,6 @@ class VRScene {
                 gridHelper.position.set(position.x, 0, position.z); // Align the grid with the model
                 this.scene.add(gridHelper);
 
-
                 // Fetch metadata and set scale
                 fetch('./esp32_metadata.json')
                     .then(response => {
@@ -335,9 +363,6 @@ class VRScene {
             (error) => {
                 console.error('An error happened in loadModel', error);
             }
-
-
-
         );
     }
 
@@ -377,30 +402,9 @@ class VRScene {
         window.addEventListener('resize', () => {
             this.camera.aspect = window.innerWidth / window.innerHeight;
             this.camera.updateProjectionMatrix();
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.renderer.setSize(window.innerWidth, window.innerHeight.innerWidth, window.innerHeight);
         });
-    }
-
-    onControllerConnected(event, index) {
-        const gamepad = event.data.gamepad;
-        event.target.userData.gamepad = gamepad;
-
-        const onGamepadUpdate = () => {
-            if (gamepad.axes.length > 3) {
-                const x = gamepad.axes[2];
-                const y = gamepad.axes[3];
-                this.movement.forward = y < -0.2;
-                this.movement.backward = y > 0.2;
-                this.movement.left = x < -0.2;
-                this.movement.right = x > 0.2;
-            }
-
-            requestAnimationFrame(onGamepadUpdate);
-        };
-
-        onGamepadUpdate();
     }
 }
 
-// Initialize the VRScene
 new VRScene();

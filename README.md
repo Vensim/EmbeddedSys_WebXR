@@ -1,6 +1,6 @@
 ## Intro
 
-An experimental project to explore visualising different layers of an embedded system, it's development, and application and network layer using VR system for purposes of testing, debugging or monitoring purposes.
+An experimental project to explore visualising different layers of an embedded system, it's development, application and network layer using VR system for purposes of testing, debugging or monitoring purposes.
 
 It is difficult to represent and visualise all layers of an implementation on one or two monitors due to space or set-up. Setting up a VR environment and display all relevant data in an environment could prove more inuitive in representing a full system. 
 
@@ -10,7 +10,7 @@ Baseline used for setting up the project:
 * VR platform : Oculus Quest 2
 * VR visualisation : WebXR - ThreeJS
 * Server : NodeJS Express 
-* Embedded platform : ESP32
+* Embedded platform : ESP32/ESP-IDF
 
 ### System Architecture
 Philosophy of the system is to extract all facets relating to embedded development for visualisation. 
@@ -18,8 +18,7 @@ Philosophy of the system is to extract all facets relating to embedded developme
 * Write application and interfacing of embedded components in a logging conscious way.
 
 ![SysLayout.png](SysLayout.png)
-### Limitations
-Constraints are imposed by the ESP-IDF build system for developing in a more hardware abstracted way
+
 ## Setting up
 
 NodeJS 17 or higher

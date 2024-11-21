@@ -21,13 +21,20 @@ export default {
             }
         ]
     },
+
+    mode: 'development',
     devServer: {
         static: path.join(__dirname, 'public'),
         compress: true,
+        client: {
+            logging: 'none',
+        },
         port: 3443,
         https: {
             key: './server.key',
             cert: './server.cert',
         }
-    }
+    },
+
+    stats : 'minimal',
 };
